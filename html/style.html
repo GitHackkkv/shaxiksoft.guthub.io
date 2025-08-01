@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shaxik FF</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        canvas#bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.5;
+        }
+
+        .header {
+            text-align: center;
+            margin: 40px 0;
+            animation: fadeInDown 1.5s ease-out;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+            animation: pulseText 2s infinite alternate;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 1.5s ease-out 0.3s both;
+        }
+
+        .category {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            cursor: pointer;
+            transition: transform 0.3s, background 0.3s, box-shadow 0.3s;
+            opacity: 0;
+        }
+
+        .category.visible {
+            opacity: 1;
+            animation: slideInLeft 1s ease-out both;
+        }
+
+        .category:hover {
+            transform: translateY(-5px) scale(1.02);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.5);
+        }
+
+        .category h2 {
+            font-size: 1.5rem;
+            color: #4ecdc4;
+            margin-bottom: 10px;
+            transition: color 0.3s;
+        }
+
+        .category:hover h2 {
+            color: #ff6b6b;
+        }
+
+        .category-details {
+            display: none;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            margin-top: 10px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .category-details p {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .buy-button {
+            display: inline-block;
+            background: linear-gradient(90deg, #ff6b6b, #ff8e53);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .buy-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .buy-button:hover::before {
+            left: 100%;
+        }
+
+        .buy-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.7);
+            background: linear-gradient(90deg, #ff8e53, #ff6b6b);
+        }
+
+        .buy-button:active {
+            animation: vibrate 0.3s ease;
+        }
+
+        .telegram-link {
+            text-align: center;
+            margin-top: 30px;
+            animation: fadeInUp 1.5s ease-out 0.6s both;
+        }
+
+        .telegram-link a {
+            color: #4ecdc4;
+            text-decoration: none;
+            font-size: 1.2rem;
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        .telegram-link a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background: #ff6b6b;
+            transition: width 0.3s ease;
+        }
+
+        .telegram-link a:hover::after {
+            width: 100%;
+        }
+
+        .telegram-link a:hover {
+            color: #ff6b6b;
+            animation: flicker 1.5s infinite;
+        }
+
+        /* CSS Анимации */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-100px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes pulseText {
+            from { text-shadow: 0 0 10px rgba(255, 107, 107, 0.5); }
+            to { text-shadow: 0 0 20px rgba(255, 107, 107, 0.8); }
+        }
+
+        @keyframes vibrate {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-2px); }
+            40% { transform: translateX(2px); }
+            60% { transform: translateX(-2px); }
+            80% { transform: translateX(2px); }
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .category h2 {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bgCanvas"></canvas>
+    <div class="header">
+        <h1>Shaxik FF</h1>
+    </div>
+
+    <div class="container">
+        <div class="category" onclick="toggleDetails('soft-ios')">
+            <h2>🛒 Категория: SOFT iOS</h2>
+            <div id="soft-ios" class="category-details">
+                <p><strong>Описание:</strong> Софт на iPhone без риска бана. Актуален только на одну обнову Free Fire. После покупки мы настроим софт под вас.</p>
+                <p><strong>Цена:</strong> 800₽ / 10$</p>
+                <p><strong>⚠️ Функционал может меняться с каждой обновой FF.</strong></p>
+                <a href="https://t.me/s7evx" class="buy-button" target="_blank">Купить</a>
+            </div>
+        </div>
+
+        <div class="category" onclick="toggleDetails('panel-pc')">
+            <h2>🛒 Категория: Panel PC</h2>
+            <div id="panel-pc" class="category-details">
+                <p><strong>Описание:</strong> Разные виды панелей.</p>
+                <p><strong>Средняя цена:</strong></p>
+                <p>– На неделю: 350₽</p>
+                <p>– Навсегда: 800₽</p>
+                <a href="https://t.me/s7evx" class="buy-button" target="_blank">Купить</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="telegram-link">
+        <a href="https://t.me/shaxiktt" target="_blank">Подписывайся на мой Telegram-канал! 📢</a>
+    </div>
+
+    <script>
+        // Функция для раскрытия/скрытия деталей категории
+        function toggleDetails(id) {
+            const details = document.getElementById(id);
+            const isVisible = details.style.display === 'block';
+            details.style.display = isVisible ? 'none' : 'block';
+        }
+
+        // Плавное появление категорий при прокрутке
+        function revealOnScroll() {
+            const categories = document.querySelectorAll('.category');
+            categories.forEach(category => {
+                const rect = category.getBoundingClientRect();
+                const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+                if (rect.top <= windowHeight * 0.8) {
+                    category.classList.add('visible');
+                }
+            });
+        }
+
+        // Эффект подсветки при наведении
+        document.querySelectorAll('.category').forEach(category => {
+            category.addEventListener('mouseenter', () => {
+                category.style.filter = 'brightness(1.2)';
+            });
+            category.addEventListener('mouseleave', () => {
+                category.style.filter = 'brightness(1)';
+            });
+        });
+
+        // Анимация фона с частицами
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const particlesArray = [];
+        const numberOfParticles = 100;
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 5 + 1;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.speedY = Math.random() * 1 - 0.5;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.size > 0.2) this.size -= 0.1;
+            }
+            draw() {
+                ctx.fillStyle = 'rgba(255, 107, 107, 0.8)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            for (let i = 0; i < numberOfParticles; i++) {
+                particlesArray.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+                particlesArray[i].draw();
+                if (particlesArray[i].size <= 0.2) {
+                    particlesArray.splice(i, 1);
+                    i--;
+                    particlesArray.push(new Particle());
+                }
+            }
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Запуск анимации при прокрутке
+        window.addEventListener('scroll', revealOnScroll);
+        window.addEventListener('load', revealOnScroll);
+    </script>
+</body>
+</html>
